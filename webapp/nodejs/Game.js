@@ -211,58 +211,56 @@ class Game {
       }
     ]
 
-    // currentTime から 1000 ミリ秒先までシミュレーションする
-    for (let t = currentTime + 1; t <= currentTime + 1000; t++) {
-      totalMilliIsu = totalMilliIsu.add(totalPower)
-      let updated = false
-
-      // 時刻 t で発生する adding を計算する
-      if (addingAt[t]) {
-        let a = addingAt[t]
-        updated = true
-        totalMilliIsu = totalMilliIsu.add(bigint(a.isu).mul(bigint('1000')))
+    for (let itemId in mItems) {
+      if (typeof itemOnSale[itemId] !== 'undefined') {
+        continue;
       }
-
-      // 時刻 t で発生する buying を計算する
-      if (buyingAt[t]) {
-        updated = true
-        const updatedID = {}
-        for (let b of buyingAt[t]) {
-          const m = mItems[b.item_id]
-          updatedID[b.item_id] = true
-          itemBuilt[b.item_id] = itemBuilt[b.item_id] ? itemBuilt[b.item_id] + 1 : 1
-          const power = m.getPower(b.ordinal)
-          itemPower[b.item_id] = itemPower[b.item_id].add(power)
-          totalPower = totalPower.add(power)
+      for (let t = currentTime + 1; t <= currentTime + 1000; t++) {
+        totalMilliIsu = totalMilliIsu.add(totalPower)
+        let updated = false
+        // 時刻 t で発生する adding を計算する
+        if (addingAt[t]) {
+          let a = addingAt[t]
+          updated = true
+          totalMilliIsu = totalMilliIsu.add(bigint(a.isu).mul(bigint('1000')))
         }
-        for (let id in updatedID) {
-          itemBuilding[id].push({
+        // 時刻 t で発生する buying を計算する
+        if (buyingAt[t]) {
+          updated = true
+          const updatedID = {}
+          for (let b of buyingAt[t]) {
+            const m = mItems[b.item_id]
+            updatedID[b.item_id] = true
+            itemBuilt[b.item_id] = itemBuilt[b.item_id] ? itemBuilt[b.item_id] + 1 : 1
+            const power = m.getPower(b.ordinal)
+            itemPower[b.item_id] = itemPower[b.item_id].add(power)
+            totalPower = totalPower.add(power)
+          }
+          for (let id in updatedID) {
+            itemBuilding[id].push({
+              time:        t,
+              count_built: itemBuilt[id],
+              power:       this.big2exp(itemPower[id]),
+            })
+          }
+        }
+        if (updated) {
+          schedule.push({
             time:        t,
-            count_built: itemBuilt[id],
-            power:       this.big2exp(itemPower[id]),
+            milli_isu:   this.big2exp(totalMilliIsu),
+            total_power: this.big2exp(totalPower),
           })
         }
-      }
-
-      if (updated) {
-        schedule.push({
-          time:        t,
-          milli_isu:   this.big2exp(totalMilliIsu),
-          total_power: this.big2exp(totalPower),
-        })
-      }
-
-      // 時刻 t で購入可能になったアイテムを記録する
-      for (let itemId in mItems) {
-        if (typeof itemOnSale[itemId] !== 'undefined') {
-          continue;
-        }
-        if (0 <= totalMilliIsu.cmp(itemPrice[itemId].mul(bigint('1000')))) {
-          itemOnSale[itemId] = t
+        // 時刻 t で購入可能になったアイテムを記録する
+        for (let itemId in mItems) {
+          if (0 <= totalMilliIsu.cmp(itemPrice[itemId].mul(bigint('1000')))) {
+            itemOnSale[itemId] = t
+          }
         }
       }
     }
 
+    // currentTime から 1000 ミリ秒先までシミュレーションする
     const gsAdding = []
     for (let a of Object.values(addingAt)) {
       gsAdding.push(a)
