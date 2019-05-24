@@ -258,11 +258,9 @@ class Game {
       }
 
       // 時刻 t で購入可能になったアイテムを記録する
-      for (let itemId in mItems) {
         if (0 <= totalMilliIsu.cmp(itemPrice[itemId].mul(bigint('1000')))) {
           itemOnSale[itemId] = t
         }
-      }
     }
   }
 
