@@ -211,6 +211,11 @@ class Game {
       }
     ]
 
+    for (let itemId in mItems) {
+      if (typeof itemOnSale[itemId] !== 'undefined') {
+        continue;
+      }
+
     // currentTime から 1000 ミリ秒先までシミュレーションする
     for (let t = currentTime + 1; t <= currentTime + 1000; t++) {
       totalMilliIsu = totalMilliIsu.add(totalPower)
@@ -254,14 +259,12 @@ class Game {
 
       // 時刻 t で購入可能になったアイテムを記録する
       for (let itemId in mItems) {
-        if (typeof itemOnSale[itemId] !== 'undefined') {
-          continue;
-        }
         if (0 <= totalMilliIsu.cmp(itemPrice[itemId].mul(bigint('1000')))) {
           itemOnSale[itemId] = t
         }
       }
     }
+  }
 
     const gsAdding = []
     for (let a of Object.values(addingAt)) {
