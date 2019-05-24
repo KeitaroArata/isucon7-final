@@ -217,7 +217,7 @@ class Game {
       }
 
     // currentTime から 1000 ミリ秒先までシミュレーションする
-    for (let t = currentTime + 1; t <= currentTime + 1000; t++) {
+    for (let t = currentTime; t <= currentTime + 1000; t++) {
       totalMilliIsu = totalMilliIsu.add(totalPower)
       let updated = false
 
